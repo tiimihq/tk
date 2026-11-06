@@ -118,7 +118,7 @@ func openBackend() (backend, error) {
 		}
 		return &paperclipBackend{c: c}, nil
 	default:
-		return nil, errors.New("unknown mode " + mode + " (use local, paperclip, linear, jira or github)")
+		return nil, errors.New("unknown mode " + mode + " (use local, linear, jira or github)")
 	}
 }
 

@@ -1,7 +1,7 @@
-// Command tk is the agent-facing work loop: compact views of assigned work and
-// start/note/handoff/done for sessions developers run themselves. Work lives in
-// a backend: on this machine (local mode, the default) or on a Paperclip server
-// through the tk-bridge plugin.
+// Command tk is Tiimi's agent-facing work loop: compact views of assigned work
+// and start/note/handoff/done for sessions developers run themselves. Work lives
+// in a backend: on this machine (local mode, the default), Linear, Jira or GitHub
+// Issues. Paperclip mode still works but is no longer advertised.
 package main
 
 import (
@@ -44,9 +44,9 @@ Background service (tkd):
   tk daemon                  run it in the foreground
   tk status                  mode, tkd, open sessions, queued writes
 
-Other: tk version, tk measure <KEY> (Paperclip), tk hook install (Claude Code only), --json on reads.
+Other: tk version, tk hook install (Claude Code only), --json on reads.
 
-Mode: local (default, no account), linear, jira, github or paperclip, in ~/.tk/config.json or TK_MODE.
+Mode: local (default, no account), linear, jira or github, in ~/.tk/config.json or TK_MODE.
 Several agents at once: one session per folder (git worktrees); TK_ISSUE=<KEY> picks one explicitly.
 Docs: https://tiimi.dev tkd timings: TKD_REFRESH (15s), TKD_COST_INTERVAL (30s), TKD_IDLE_TIMEOUT (30m).`
 
