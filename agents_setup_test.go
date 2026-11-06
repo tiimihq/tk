@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -152,6 +153,9 @@ func TestInitSetsUpDetectedAgents(t *testing.T) {
 	bin := filepath.Join(dir, "bin")
 	_ = os.MkdirAll(bin, 0o755)
 	for _, name := range []string{"codex", "gemini"} { // pretend these are installed
+		if runtime.GOOS == "windows" {
+			name += ".exe" // Windows finds programs by extension (PATHEXT)
+		}
 		_ = os.WriteFile(filepath.Join(bin, name), []byte("#!/bin/sh\n"), 0o755)
 	}
 	t.Setenv("PATH", bin)
