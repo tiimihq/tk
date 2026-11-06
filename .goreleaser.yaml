@@ -1,0 +1,87 @@
+# Release builds, the way Beads and lazygit ship: one static binary per
+# platform, archives + checksums.txt on a GitHub release, and a Homebrew tap.
+#
+# Tiimi (https://tiimi.dev), repo github.com/tiimihq/tk; the command is `tk`.
+#
+# Local dry run:  goreleaser release --snapshot --clean
+# Release:        git tag v0.1.0 && git push --tags   (CI runs goreleaser release)
+version: 2
+
+project_name: tk
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: tk
+    main: .
+    binary: tk
+    env:
+      - CGO_ENABLED=0
+    goos: [darwin, linux, windows]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+
+archives:
+  - id: tk
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - LICENSE
+      - README.md
+      - SECURITY.md
+
+# Developer ID signing + notarization for the macOS binaries (runs on Linux CI
+# through quill). Skipped when the secrets are missing, e.g. a local snapshot.
+# Secrets are the same ones FocusBae uses: base64 .p12 and base64 .p8.
+notarize:
+  macos:
+    - enabled: '{{ isEnvSet "MACOS_SIGN_P12" }}'
+      ids: [tk]
+      sign:
+        certificate: "{{ .Env.MACOS_SIGN_P12 }}"
+        password: "{{ .Env.MACOS_SIGN_PASSWORD }}"
+      notarize:
+        issuer_id: "{{ .Env.MACOS_NOTARY_ISSUER_ID }}"
+        key_id: "{{ .Env.MACOS_NOTARY_KEY_ID }}"
+        key: "{{ .Env.MACOS_NOTARY_KEY }}"
+        wait: true
+        timeout: 20m
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude: ["^docs:", "^test:"]
+
+homebrew_casks:
+  - name: tiimi
+    repository:
+      owner: tiimihq
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: "https://tiimi.dev"
+    description: "Tiimi: your coding agents as teammates in your tracker, with handoffs and cost per issue"
+    license: MIT
+    binaries: [tk]
+    # Fallback for releases built without the Apple secrets: clear the download
+    # quarantine so macOS doesn't block an unsigned binary.
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/tk"]
+          end
+
+release:
+  draft: true
+  prerelease: auto

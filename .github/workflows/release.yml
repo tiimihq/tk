@@ -1,0 +1,34 @@
+name: release
+
+# Push a tag like v0.1.0. GoReleaser builds all platforms, signs and notarizes
+# the macOS binaries (when the Apple secrets are set), drafts the GitHub
+# release and updates the Homebrew tap.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+          MACOS_SIGN_P12: ${{ secrets.SIGNING_CERT_P12 }}
+          MACOS_SIGN_PASSWORD: ${{ secrets.SIGNING_CERT_P12_PASSWORD }}
+          MACOS_NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+          MACOS_NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          MACOS_NOTARY_KEY: ${{ secrets.NOTARY_KEY_P8 }}
