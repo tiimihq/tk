@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tiimi: your coding agents, as teammates</title>
+<meta name="description" content="Tiimi is a small open-source CLI for the coding agents you run yourself. Briefs, handoffs and cost per issue, in the tracker your team already uses.">
+<meta property="og:title" content="Tiimi: your coding agents, as teammates">
+<meta property="og:description" content="Briefs, handoffs and cost per issue for Claude Code, Codex, Cursor, Gemini CLI and OpenCode, in Linear, Jira, GitHub Issues or on your machine.">
+<meta property="og:url" content="https://tiimi.dev">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23171a17'/><circle cx='11' cy='16' r='4.5' fill='%23b6f06b'/><circle cx='21' cy='16' r='4.5' fill='none' stroke='%23b6f06b' stroke-width='2.4'/></svg>">
+<style>
+:root {
+  --bg: #f6f5f0; --surface: #ffffff; --ink: #171a17; --muted: #5d625c; --line: #dcdad1;
+  --accent: #3f7d12; --accent-soft: #e6f2d6; --code-bg: #171a17; --code-ink: #e9ebe4; --code-dim: #8d948a; --code-accent: #b6f06b;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111311; --surface: #181b18; --ink: #e9ebe4; --muted: #9aa196; --line: #2a2e29;
+    --accent: #b6f06b; --accent-soft: #1f2a15; --code-bg: #0b0d0b;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111311; --surface: #181b18; --ink: #e9ebe4; --muted: #9aa196; --line: #2a2e29;
+  --accent: #b6f06b; --accent-soft: #1f2a15; --code-bg: #0b0d0b;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 var(--sans); }
+a { color: inherit; text-underline-offset: 3px; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+header.top { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; letter-spacing: -0.01em; text-decoration: none; }
+.brand svg { width: 26px; height: 26px; }
+nav a { color: var(--muted); text-decoration: none; margin-left: 20px; font-size: 15px; }
+nav a:hover { color: var(--ink); }
+.hero { padding: 56px 0 40px; }
+.tag { display: inline-block; font: 600 12px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); padding: 7px 10px; border-radius: 99px; }
+h1 { font-size: clamp(38px, 7vw, 64px); line-height: 1.04; letter-spacing: -0.035em; margin: 18px 0 18px; max-width: 13ch; }
+.lede { font-size: clamp(18px, 2.4vw, 21px); color: var(--muted); max-width: 40em; margin: 0 0 30px; }
+.lede strong { color: var(--ink); font-weight: 600; }
+.install { background: var(--code-bg); color: var(--code-ink); border-radius: 12px; overflow: hidden; max-width: 640px; }
+.tabs { display: flex; border-bottom: 1px solid #2a2e29; overflow-x: auto; }
+.tabs button { background: none; border: 0; color: var(--code-dim); font: 500 13px var(--mono); padding: 11px 16px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+.tabs button[aria-selected="true"] { color: var(--code-ink); border-bottom-color: var(--code-accent); }
+.cmd { display: flex; align-items: center; gap: 12px; padding: 16px 16px 16px 18px; }
+.cmd code { flex: 1; font: 15px/1.5 var(--mono); overflow-x: auto; white-space: nowrap; }
+.cmd code::before { content: "$ "; color: var(--code-dim); }
+.copy { background: #262a25; color: var(--code-ink); border: 0; border-radius: 7px; font: 500 12px var(--mono); padding: 7px 10px; cursor: pointer; }
+.copy:hover { background: #343932; }
+.note { font-size: 14px; color: var(--muted); margin: 12px 2px 0; }
+section { padding: 52px 0; border-top: 1px solid var(--line); }
+h2 { font-size: clamp(26px, 4vw, 34px); letter-spacing: -0.02em; line-height: 1.15; margin: 0 0 12px; }
+.sub { color: var(--muted); max-width: 42em; margin: 0 0 28px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+@media (max-width: 760px) { .grid { grid-template-columns: 1fr; } nav a:not(.gh) { display: none; } }
+pre.term { margin: 0; background: var(--code-bg); color: var(--code-ink); border-radius: 12px; padding: 18px; font: 13.5px/1.55 var(--mono); overflow-x: auto; }
+.term .d { color: var(--code-dim); } .term .a { color: var(--code-accent); }
+.steps { list-style: none; margin: 0; padding: 0; }
+.steps li { display: grid; grid-template-columns: 116px 1fr; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+.steps li:last-child { border-bottom: 0; }
+.steps code { font: 600 14px var(--mono); color: var(--accent); }
+.steps span { color: var(--muted); font-size: 15.5px; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 760px) { .cards { grid-template-columns: 1fr; } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+.card h3 { margin: 0 0 8px; font-size: 17px; }
+.card p { margin: 0; color: var(--muted); font-size: 15px; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th, td { text-align: left; padding: 11px 12px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+td.s { color: var(--muted); white-space: nowrap; }
+.pill { font: 600 11px var(--mono); padding: 3px 7px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
+.tablewrap { overflow-x: auto; }
+footer { border-top: 1px solid var(--line); padding: 30px 0 50px; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 8px 22px; }
+footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/" aria-label="Tiimi home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#171a17"/><circle cx="11" cy="16" r="4.5" fill="#b6f06b"/><circle cx="21" cy="16" r="4.5" fill="none" stroke="#b6f06b" stroke-width="2.4"/></svg>
+      Tiimi
+    </a>
+    <nav>
+      <a href="#how">How it works</a>
+      <a href="#trackers">Trackers</a>
+      <a href="#cost">Cost</a>
+      <a class="gh" href="https://github.com/tiimihq/tk">GitHub</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <span class="tag">Open source · preview</span>
+    <h1>Your coding agents, as teammates.</h1>
+    <p class="lede">Tiimi gives the agents you run yourself (<strong>Claude Code, Codex, Cursor, Gemini CLI, OpenCode</strong>) a brief of their issue, carries handoffs between sessions and between agents, and records what each issue cost. All of it in <strong>the tracker your team already uses</strong>. No second tracker to sync.</p>
+
+    <div class="install">
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-cmd="curl -fsSL https://tiimi.dev/install | sh">curl</button>
+        <button role="tab" aria-selected="false" data-cmd="brew install tiimihq/tap/tiimi">Homebrew</button>
+        <button role="tab" aria-selected="false" data-cmd="go install github.com/tiimihq/tk@latest">Go</button>
+      </div>
+      <div class="cmd"><code id="cmd">curl -fsSL https://tiimi.dev/install | sh</code><button class="copy" id="copy">Copy</button></div>
+    </div>
+    <p class="note">One binary, <code>tk</code>, for macOS, Linux and Windows. The installer verifies the checksum and never needs sudo. MIT licensed.</p>
+  </div>
+
+  <section id="how">
+    <h2>One minute, no account</h2>
+    <p class="sub">Run <code>tk init</code> in your project: it finds the agents you have installed and connects them. Then start your agent as usual. It sees a short brief when the session starts and uses <code>tk</code> itself.</p>
+    <div class="grid">
+      <ul class="steps">
+        <li><code>tk start</code><span>Claim an issue and print its brief, with the last handoff.</span></li>
+        <li><code>tk note</code><span>Record progress worth keeping.</span></li>
+        <li><code>tk handoff</code><span>Pause: what's done, what's left, what didn't work. Any agent resumes from it.</span></li>
+        <li><code>tk done</code><span>Finish. The issue moves on and gets its cost.</span></li>
+      </ul>
+<pre class="term" aria-label="Example terminal session"><span class="d">$</span> tk init
+  <span class="a">✓</span> Claude Code  session-start hook
+  <span class="a">✓</span> Codex CLI    hooks + AGENTS.md
+<span class="d">$</span> tk new "Add cursor pagination"
+LOC-1 created
+<span class="d"># …your agent, in its session:</span>
+<span class="d">$</span> tk start LOC-1
+LOC-1 Add cursor pagination [in_progress]
+<span class="d">$</span> tk handoff "API done; UI left"
+LOC-1 handed off · <span class="a">~$0.42</span> so far
+<span class="d"># …a different agent, tomorrow:</span>
+<span class="d">$</span> tk start LOC-1
+Recent notes:
+- Handoff: API done; UI left</pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Why it exists</h2>
+    <div class="cards">
+      <div class="card"><h3>Agents forget</h3><p>Every new session starts cold. A brief and the last handoff come back at session start, and after context compaction.</p></div>
+      <div class="card"><h3>Work lives in two places</h3><p>Agent task lists drift from the team's tracker. Tiimi writes to the tracker you have: one copy of every issue.</p></div>
+      <div class="card"><h3>Nobody knows the cost</h3><p>Tokens and dollars per issue, read from each agent's own local logs. See which work is expensive before the bill does.</p></div>
+    </div>
+  </section>
+
+  <section id="trackers">
+    <h2>Keep your tracker</h2>
+    <p class="sub"><code>tk start</code> assigns the issue and moves it to In Progress; <code>handoff</code> posts a comment and moves it back; <code>done</code> posts a summary with the cost. Keys live in the macOS Keychain or Linux Secret Service.</p>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>Tracker</th><th>Connect with</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><strong>On your machine</strong></td><td>nothing, it's the default</td><td class="s"><span class="pill">stable</span></td></tr>
+        <tr><td><strong>Linear</strong></td><td>personal API key; app login coming</td><td class="s"><span class="pill">tested live</span></td></tr>
+        <tr><td><strong>GitHub Issues</strong></td><td>your <code>gh</code> login or a token</td><td class="s"><span class="pill">tested live</span></td></tr>
+        <tr><td><strong>Jira Cloud</strong></td><td>API token</td><td class="s">beta</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="note"><code>tk board</code> shows every issue in the terminal, live, while your agents work.</p>
+  </section>
+
+  <section id="cost">
+    <h2>Cost per issue, honestly</h2>
+    <div class="grid">
+      <div>
+        <p class="sub" style="margin-bottom:14px">Tiimi prices every reply at the provider's standard API list price on that day and adds it to the issue. On a subscription you don't pay per token, but the numbers still show what each issue costs relative to others.</p>
+        <ul class="sub" style="padding-left:20px;margin:0">
+          <li>Tokens are stored too, so cost can be recomputed when prices change.</li>
+          <li><code>tk cost update</code> fetches the latest prices and shows what changed. Never automatic.</li>
+          <li>A model Tiimi can't price shows as "not priced", never $0.00.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>What stays on your machine</h3>
+        <p>Agent logs are read locally and never uploaded. Your tracker gets what you or your agent write with <code>tk note</code>, <code>handoff</code> and <code>done</code>, plus token counts and costs. Never prompts or session logs. No telemetry.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Works with</h2>
+    <p class="sub"><strong>Hooks and cost:</strong> Claude Code, Codex CLI, Gemini CLI (beta), OpenCode (beta). <strong>Hooks:</strong> Cursor. <strong>Instructions:</strong> Factory, Copilot CLI, Junie, Windsurf, Cody, Kilo Code, Kiro, Aider, Mux. Several agents at once: one session per folder or git worktree.</p>
+  </section>
+
+  <footer>
+    <span>Tiimi: "team" in Finnish.</span>
+    <a href="https://github.com/tiimihq/tk">Source</a>
+    <a href="https://github.com/tiimihq/tk/blob/main/SECURITY.md">Security</a>
+    <a href="https://github.com/tiimihq/tk/blob/main/LICENSE">MIT license</a>
+  </footer>
+</div>
+<script>
+(function () {
+  var tabs = document.querySelectorAll('.tabs button'), cmd = document.getElementById('cmd'), copy = document.getElementById('copy');
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function () {
+      tabs.forEach(function (o) { o.setAttribute('aria-selected', o === t ? 'true' : 'false'); });
+      cmd.textContent = t.dataset.cmd;
+    });
+  });
+  copy.addEventListener('click', function () {
+    if (!navigator.clipboard) return;
+    navigator.clipboard.writeText(cmd.textContent).then(function () {
+      copy.textContent = 'Copied';
+      setTimeout(function () { copy.textContent = 'Copy'; }, 1500);
+    });
+  });
+})();
+</script>
+</body>
+</html>

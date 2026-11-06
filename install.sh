@@ -13,6 +13,9 @@
 # install unless the SHA-256 matches, and never needs sudo.
 set -eu
 
+# Everything runs from main, called on the last line: if the download of this
+# script is cut short, sh never runs a partial install.
+main() {
 REPO="${TK_REPO:-tiimihq/tk}"
 INSTALL_DIR="${TK_INSTALL_DIR:-$HOME/.local/bin}"
 
@@ -41,7 +44,10 @@ if [ -z "$version" ]; then
   # The latest-release page redirects to .../releases/tag/vX.Y.Z
   url=$(curl -fsSLI -o /dev/null -w '%{url_effective}' "https://github.com/$REPO/releases/latest") ||
     fail "can't reach GitHub to find the latest release"
-  version=${url##*/}
+  case "$url" in
+    */releases/tag/*) version=${url##*/} ;;
+    *) fail "no release published yet; see https://github.com/$REPO" ;;
+  esac
 fi
 version=${version#v}
 [ -n "$version" ] || fail "can't tell which version to install"
@@ -79,4 +85,7 @@ case ":$PATH:" in
   *":$INSTALL_DIR:"*) ;;
   *) say "Add it to your PATH:  export PATH=\"$INSTALL_DIR:\$PATH\"" ;;
 esac
-say "Next: tk new \"First issue\" && tk board    (Claude Code hook: tk hook install, in your project)"
+say "Next, in your project:  tk init   (connects your coding agents)  then  tk board"
+}
+
+main "$@"
