@@ -22,7 +22,7 @@ func TestSecretsLookupOrderAndImport(t *testing.T) {
 		t.Fatalf("store: %q", got)
 	}
 	info, _ := os.Stat(fileSecrets{}.path("jira"))
-	if info.Mode().Perm() != 0o600 {
+	if !ownerOnly(info) {
 		t.Fatalf("secret file mode %v", info.Mode().Perm())
 	}
 	// the environment beats everything

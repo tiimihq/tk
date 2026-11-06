@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -19,6 +20,8 @@ func writeCodexRollout(t *testing.T, root, cwd, name string, at time.Time, respo
 		t.Fatal(err)
 	}
 	ts := func(d time.Duration) string { return at.Add(d).UTC().Format("2006-01-02T15:04:05.000Z") }
+	q, _ := json.Marshal(cwd) // escaped, as Codex writes it (Windows paths have backslashes)
+	cwd = string(q[1 : len(q)-1])
 	var b strings.Builder
 	fmt.Fprintf(&b, `{"timestamp":"%s","type":"session_meta","payload":{"id":"%s","cwd":"%s","cli_version":"0.166.0"}}`+"\n", ts(0), name, cwd)
 	fmt.Fprintf(&b, `{"timestamp":"%s","type":"turn_context","payload":{"model":"gpt-6-astra","cwd":"%s"}}`+"\n", ts(time.Second), cwd)
@@ -83,7 +86,7 @@ func TestCodexUsageSync(t *testing.T) {
 
 // The real log from the pilot, when present on this machine, must parse.
 func TestCodexUsageRealLogIfPresent(t *testing.T) {
-	files, _ := filepath.Glob(filepath.Join(os.Getenv("HOME"), ".codex", "sessions", "2026", "11", "02", "rollout-2026-11-02T15-49-*.jsonl"))
+	files, _ := filepath.Glob(filepath.Join(realHome, ".codex", "sessions", "2026", "11", "02", "rollout-2026-11-02T15-49-*.jsonl"))
 	if len(files) == 0 {
 		t.Skip("no pilot Codex log on this machine")
 	}

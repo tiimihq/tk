@@ -169,7 +169,7 @@ func TestOAuthRefreshConcurrent(t *testing.T) {
 		t.Fatalf("rotation not persisted: %v", err)
 	}
 	info, err := os.Stat(fileSecrets{}.path("linear-oauth"))
-	if err != nil || info.Mode().Perm() != 0600 || fileExists(oauthPath()) {
+	if err != nil || !ownerOnly(info) || fileExists(oauthPath()) {
 		t.Fatal("credential permissions")
 	}
 	if _, err = refreshOAuth(srv.Client(), srv.URL, "other"); err == nil {

@@ -17,7 +17,7 @@ func inProject(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
 	t.Setenv("TK_HOME", filepath.Join(dir, ".tkhome"))
-	t.Setenv("HOME", filepath.Join(dir, "home"))
+	setHome(t, filepath.Join(dir, "home"))
 	t.Setenv("TK_MODE", "local")
 	t.Setenv("CODEX_HOME", "")
 	old, _ := os.Getwd()

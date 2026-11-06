@@ -13,8 +13,9 @@ import (
 func TestResolveLinearHuman(t *testing.T) {
 	t.Setenv("TK_HOME", t.TempDir())
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	setHome(t, home)
 	t.Setenv("GIT_CONFIG_NOSYSTEM", "1")
+	t.Chdir(t.TempDir()) // outside any git repo, so no repo-level user.email
 	t.Setenv("GIT_CONFIG_GLOBAL", filepath.Join(home, ".gitconfig"))
 	t.Setenv("LINEAR_API_KEY", "")
 	t.Setenv("TK_LINEAR_API_KEY", "")

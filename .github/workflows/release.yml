@@ -20,6 +20,15 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      - name: require Apple signing secrets
+        env:
+          P12: ${{ secrets.SIGNING_CERT_P12 }}
+          KEY: ${{ secrets.NOTARY_KEY_P8 }}
+        run: |
+          if [ -z "$P12" ] || [ -z "$KEY" ]; then
+            echo "::error::Apple signing secrets missing: refusing to ship unsigned macOS binaries"
+            exit 1
+          fi
       - uses: goreleaser/goreleaser-action@v6
         with:
           version: "~> v2"

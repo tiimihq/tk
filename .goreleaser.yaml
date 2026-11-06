@@ -73,14 +73,7 @@ homebrew_casks:
     description: "Tiimi: your coding agents as teammates in your tracker, with handoffs and cost per issue"
     license: MIT
     binaries: [tk]
-    # Fallback for releases built without the Apple secrets: clear the download
-    # quarantine so macOS doesn't block an unsigned binary.
-    hooks:
-      post:
-        install: |
-          if OS.mac?
-            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/tk"]
-          end
+    # No quarantine workaround: release.yml refuses to publish unsigned macOS binaries.
 
 release:
   draft: true
