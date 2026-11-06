@@ -360,7 +360,7 @@ func (l *linearBackend) context(key string) (heartbeatContext, error) {
 	sort.Slice(comments, func(i, j int) bool { return comments[i].CreatedAt < comments[j].CreatedAt })
 	if n := len(comments); n > 0 {
 		var b strings.Builder
-		b.WriteString("## Recent Concrete Actions\n")
+		b.WriteString("## Recent notes\n")
 		for _, c := range comments {
 			b.WriteString("- " + oneLine(strings.TrimPrefix(c.Body, linearNotePrefix)) + "\n")
 		}

@@ -158,7 +158,7 @@ func (l *localBackend) context(key string) (heartbeatContext, error) {
 		hc.Issue = li.toIssue()
 		if n := len(li.Comments); n > 0 {
 			var b strings.Builder
-			b.WriteString("## Recent Concrete Actions\n")
+			b.WriteString("## Recent notes\n")
 			for _, c := range li.Comments[max(0, n-5):] {
 				b.WriteString("- " + oneLine(c.Body) + "\n")
 			}

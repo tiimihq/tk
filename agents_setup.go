@@ -98,7 +98,7 @@ func recipes() []recipe {
 				return []string{c.claudeSettings()}, claudeHookInstall(c.claudeSettings(), true, true)
 			}},
 		{name: "codex", label: "Codex CLI", detect: []string{"codex", "~/.codex/sessions"}, global: true,
-			usage: "captured (exact session via the hook; unpriced until OpenAI rates are added)",
+			usage: "captured (exact session via the hook)",
 			install: func(c setupCtx) ([]string, error) {
 				var changed []string
 				dir := c.codexDir()
@@ -168,7 +168,7 @@ func recipes() []recipe {
 				return append(changed, compact(f)...), err
 			}},
 		{name: "gemini", label: "Gemini CLI", detect: []string{"gemini", "~/.gemini/tmp"}, global: true,
-			usage: "captured (unpriced until Google rates are added)",
+			usage: "captured (beta)",
 			install: func(c setupCtx) ([]string, error) {
 				a, err := upsertHooks(c.geminiFile("settings.json"), "gemini", geminiHooks)
 				if err != nil {

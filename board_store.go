@@ -1,7 +1,11 @@
 package main
 
 import (
+	"errors"
+	"os"
+
 	"github.com/tiimihq/tk/internal/board"
+	"golang.org/x/term"
 )
 
 // boardStore lets the terminal board work on whatever backend tk manages.
@@ -11,6 +15,9 @@ func cmdBoard(be backend) error {
 	m, err := requireManager(be)
 	if err != nil {
 		return err
+	}
+	if !term.IsTerminal(int(os.Stdin.Fd())) || !term.IsTerminal(int(os.Stdout.Fd())) {
+		return errors.New("tk board needs an interactive terminal; agents and scripts can use tk list --all")
 	}
 	return board.Run(boardStore{m})
 }

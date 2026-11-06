@@ -109,7 +109,9 @@ func formatResume(hc heartbeatContext, maxSummary int) string {
 	}
 	if hc.ContinuationSummary != nil {
 		if s := compactSummary(hc.ContinuationSummary.Body, maxSummary); s != "" {
-			b.WriteString("Summary:\n")
+			if first, _, _ := strings.Cut(s, "\n"); !strings.HasSuffix(first, ":") {
+				b.WriteString("Summary:\n") // a summary that has no heading of its own
+			}
 			b.WriteString(s)
 			b.WriteString("\n")
 		}
