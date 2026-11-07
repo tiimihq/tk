@@ -346,3 +346,16 @@ func TestGitHubNewIssueVisibleBeforeListCatchesUp(t *testing.T) {
 		t.Fatalf("duplicate after the list caught up: %+v", items)
 	}
 }
+
+func TestGitHubCommentWithoutSession(t *testing.T) {
+	f, _, be := setupGitHub(t, `{"github":{"repo":"acme/shop"}}`)
+	if err := cmdComment(be, "#2", "looked at this, not mine"); err != nil {
+		t.Fatal(err)
+	}
+	if n := len(f.issues[2].comments); n != 1 || !strings.Contains(f.issues[2].comments[0]["body"], "looked at this") {
+		t.Fatalf("comments on #2 = %v", f.issues[2].comments)
+	}
+	if err := cmdComment(be, "#2", "  "); err == nil {
+		t.Fatal("empty comment accepted")
+	}
+}

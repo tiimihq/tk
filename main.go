@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -20,7 +21,8 @@ Work on an issue (you or your agent):
   tk note "<text>"           record progress on the issue you're working on
   tk handoff "<note>"        pause: what's done, what's left, what didn't work
   tk done "<summary>"        finish: move the issue on and record its cost
-  tk peek <KEY> | tk resume <KEY> [--full]   one-line status | full brief
+  tk show <KEY>              the issue with its full history (tk resume <KEY>: short brief)
+  tk comment <KEY> "<text>"  comment on any issue without claiming it
 
 Issues on this machine (local mode):
   tk new "<title>" [-- description]   create an issue (also Linear, Jira, GitHub)
@@ -53,13 +55,40 @@ Docs: https://tiimi.dev tkd timings: TKD_REFRESH (15s), TKD_COST_INTERVAL (30s),
 
 const defaultSummaryChars = 700
 
+// commandHelp is one line per command. Agents read help output, so it stays short.
+func commandHelp(cmd string) string {
+	h := map[string]string{
+		"next":     "tk next: your open issues, one line each",
+		"show":     "tk show <KEY>: the issue with its description and all comments, oldest first",
+		"comments": "tk comments <KEY>: same as tk show <KEY>",
+		"resume":   "tk resume <KEY> [--full]: short brief (newest comments that fit); --full = tk show",
+		"peek":     "tk peek <KEY>: one-line status",
+		"start":    "tk start <KEY>: claim the issue (in progress) and print its brief",
+		"note":     `tk note "<text>": add a comment to the issue you claimed with tk start`,
+		"handoff":  `tk handoff "<text>": pause the claimed issue: back to todo, your text is the handoff`,
+		"done":     `tk done "<text>": finish the claimed issue with a summary`,
+		"comment":  `tk comment <KEY> "<text>": comment on any issue without claiming it`,
+		"new":      `tk new "<title>" [-- description]: create an issue`,
+		"list":     "tk list [--all]: every issue (local mode)",
+		"receipt":  "tk receipt [--7d|--30d|--90d|--all]: what your agents cost per issue",
+	}
+	if line, ok := h[cmd]; ok {
+		return line
+	}
+	return "commands: next, show <KEY>, start <KEY>, note, handoff, done, comment <KEY>, new, receipt"
+}
+
 // version is set at release time: -ldflags "-X main.version=1.2.3".
 var version = "dev"
 
 func main() {
 	args, flags := splitFlags(os.Args[1:])
-	if len(args) == 0 || args[0] == "help" || flags["help"] {
+	if len(args) == 0 || args[0] == "help" || (flags["help"] && len(args) == 0) {
 		fmt.Println(usage)
+		return
+	}
+	if flags["help"] || flags["h"] { // tk <command> --help: one line, not the whole manual
+		fmt.Println(commandHelp(args[0]))
 		return
 	}
 	if args[0] == "version" || flags["version"] {
@@ -126,6 +155,9 @@ func main() {
 		err = withKey(args, func(k string) error { return cmdPeek(be, k, flags) })
 	case "resume":
 		err = withKey(args, func(k string) error { return cmdResume(be, k, flags) })
+	case "show", "comments": // the whole issue: description and every comment
+		flags["full"] = true
+		err = withKey(args, func(k string) error { return cmdResume(be, k, flags) })
 	case "new":
 		err = cmdNew(be, args[1:])
 	case "list":
@@ -153,7 +185,7 @@ func main() {
 	case "daemon":
 		err = cmdDaemon(be)
 	default:
-		fmt.Fprintln(os.Stderr, usage)
+		fmt.Fprintln(os.Stderr, "tk: unknown command "+strconv.Quote(args[0])+"; "+commandHelp("")+" (tk help: all commands)")
 		os.Exit(2)
 	}
 	check(err)
@@ -315,7 +347,7 @@ func indexOf(xs []string, x string) int {
 
 func withKey(args []string, fn func(string) error) error {
 	if len(args) < 2 {
-		fmt.Fprintln(os.Stderr, usage)
+		fmt.Fprintln(os.Stderr, "tk: "+commandHelp(args[0]))
 		os.Exit(2)
 	}
 	return fn(strings.ToUpper(args[1]))

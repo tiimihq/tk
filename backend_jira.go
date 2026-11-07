@@ -524,3 +524,6 @@ func adfText(node any) string {
 	walk(node)
 	return strings.TrimSpace(regexpBlankRuns.ReplaceAllString(b.String(), "\n\n"))
 }
+
+// commentOn adds a comment to any issue, without a tk session (tk comment).
+func (j *jiraBackend) commentOn(key, text string) error { return j.comment(key, text) }

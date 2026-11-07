@@ -291,7 +291,7 @@ func (l *linearBackend) viewerID() (string, error) {
 }
 
 const linearInboxQuery = `query {
-  viewer { id assignedIssues(first: 50, filter: { state: { type: { in: ["unstarted", "started"] } } }) {
+  viewer { id assignedIssues(first: 50, filter: { state: { type: { in: ["backlog", "unstarted", "started"] } } }) {
     nodes { identifier title priority state { name type } } } } }`
 
 func (l *linearBackend) inbox() ([]inboxItem, error) {
@@ -310,7 +310,10 @@ func (l *linearBackend) inbox() ([]inboxItem, error) {
 		return nil, err
 	}
 	l.viewer = d.Viewer.ID
-	items := make([]inboxItem, 0, len(d.Viewer.AssignedIssues.Nodes))
+	nodes := d.Viewer.AssignedIssues.Nodes
+	rank := map[string]int{"started": 0, "unstarted": 1, "backlog": 2} // work in progress first
+	sort.SliceStable(nodes, func(i, j int) bool { return rank[nodes[i].State.Type] < rank[nodes[j].State.Type] })
+	items := make([]inboxItem, 0, len(nodes))
 	for _, n := range d.Viewer.AssignedIssues.Nodes {
 		items = append(items, inboxItem{Identifier: n.Identifier, Title: n.Title, Status: tkStatus(n.State), Priority: tkPriority(n.Priority)})
 	}
@@ -321,7 +324,7 @@ const linearIssueQuery = `query($id: String!) { issue(id: $id) {
   id identifier title description priority
   state { id name type position } assignee { id } delegate { id }
   team { id states { nodes { id name type position } } }
-  comments(last: 5) { nodes { body createdAt } } } }`
+  comments(last: 100) { nodes { body createdAt } } } }`
 
 func (l *linearBackend) fetch(key string) (linearIssue, error) { return l.fetchIssue(key, true) }
 func (l *linearBackend) fetchIssue(key string, cached bool) (linearIssue, error) {
@@ -360,7 +363,7 @@ func (l *linearBackend) context(key string) (heartbeatContext, error) {
 	sort.Slice(comments, func(i, j int) bool { return comments[i].CreatedAt < comments[j].CreatedAt })
 	if n := len(comments); n > 0 {
 		var b strings.Builder
-		b.WriteString("## Recent notes\n")
+		b.WriteString("## Notes\n")
 		for _, c := range comments {
 			b.WriteString("- " + oneLine(strings.TrimPrefix(c.Body, linearNotePrefix)) + "\n")
 		}
@@ -659,3 +662,13 @@ func (l *linearBackend) appInbox() ([]inboxItem, error) {
 }
 
 func (l *linearBackend) setTimeout(d time.Duration) { l.http.Timeout = d }
+
+// commentOn adds a comment to any issue, without a tk session (tk comment).
+func (l *linearBackend) commentOn(key, text string) error {
+	li, err := l.fetchIssue(key, false)
+	if err != nil {
+		return err
+	}
+	l.invalidate(key)
+	return l.comment(li.ID, text)
+}

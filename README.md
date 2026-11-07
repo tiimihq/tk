@@ -123,6 +123,24 @@ read locally and never uploaded: the tracker gets what you or your agent write w
 `handoff` and `done`, plus token counts and costs, never prompts or session logs. Details:
 [SECURITY.md](SECURITY.md).
 
+## How many tokens does the tracker cost your agent?
+
+Same workflow (find an issue, read its 8 comments, post a note, hand it back), Claude Code,
+Sonnet 5.5, median of 3 runs. Tokens are the tracker's share, above Claude Code's own 16k:
+
+| Integration | Tracker tokens | Cost | Time |
+| --- | --- | --- | --- |
+| tk (local) | 42k | $0.051 | 9.7 s |
+| Beads | 75k | $0.066 | 11.2 s |
+| tk on GitHub Issues | 44k | $0.049 | 18.1 s |
+| `gh` CLI | 63k | $0.059 | 15.9 s |
+| GitHub MCP | 137k | $0.104 | 25.0 s |
+| tk on Linear | 45k | $0.053 | 18.1 s |
+| Linear MCP | 141k | $0.099 | 24.0 s |
+
+Method, caveats (tk was tuned during the benchmark; one workflow, small issue) and raw
+results: [bench/trackers](bench/trackers/README.md).
+
 ## Tiimi and Beads
 
 Beads is a tracker for agents that syncs to Linear, Jira and GitHub. Tiimi is a layer on the tracker you

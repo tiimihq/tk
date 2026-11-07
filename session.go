@@ -152,7 +152,7 @@ func requireSession() (*session, error) {
 		return nil, err
 	}
 	if s == nil {
-		return nil, errors.New("no open session here; run tk start <KEY>")
+		return nil, errors.New(`no issue claimed in this folder: tk start <KEY> first (then note/handoff/done), or tk comment <KEY> "<text>" to just comment`)
 	}
 	return s, nil
 }

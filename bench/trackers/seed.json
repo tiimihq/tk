@@ -1,0 +1,23 @@
+{
+  "target": {
+    "title": "EU refunds are a cent off",
+    "description": "Support ticket #4471. Customers paying in EUR or GBP get partial refunds that differ by one cent from their share of what they paid. Example: an order of 10.07 EUR for 3 units, refunding 1 unit, returns 3.35 EUR instead of 3.36 EUR. Finance noticed it in the monthly reconciliation; about 2% of EU refunds are affected. Expected: the customer gets back exactly their share, rounded half-even to the cent, in their own currency. Do not change how payments are settled with the processor (USD).",
+    "comments": [
+      "Reproduced locally with order 10.07 EUR / 3 units / refund 1: got 3.35, expected 3.36. USD orders are fine.",
+      "Checked refunds/calc.py prorate(): it rounds half-even correctly on its own, so the rounding rule itself is not the bug.",
+      "Tried switching prorate() to ROUND_HALF_UP: fixes the GBP case but breaks test_refund_rounding and the EUR cases still fail. Reverted.",
+      "Tried raising FX rate precision from 4 to 8 places in payments/fx.py: breaks receipts (test_fx expects 4 places, finance requires it). Reverted.",
+      "refunds/service.py converts the order total to USD, prorates in USD, then converts back to the order currency. Two roundings plus a 4-place FX rate lose a cent.",
+      "Flipping settings.SETTLE_IN_USD to False makes refunds right but breaks settlement (test_settlement); finance reconciles in USD, so that is not allowed.",
+      "Plan: compute the customer's refund share in the order currency (no round trip); only convert to USD where the processor needs it.",
+      "Paused here: no code changes yet. Next session should implement the plan and add a test for the 10.07 EUR case."
+    ]
+  },
+  "others": [
+    ["Invoice PDF shows tax twice for CA orders", "Customers in California see the tax line duplicated on the PDF invoice."],
+    ["Stripe webhook retries create duplicate payments", "When Stripe retries a webhook within 2 seconds we record the payment twice."],
+    ["Add GBP to the currency picker", "Product wants GBP selectable at checkout for UK customers."],
+    ["Subscription proration off by one day in leap years", "Customers upgrading on Feb 29 are charged for one extra day."],
+    ["Export refunds report as CSV", "Finance needs a CSV export of all refunds for the month."]
+  ]
+}

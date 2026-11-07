@@ -464,3 +464,12 @@ func (g *githubBackend) invalidate(n int) {
 		_ = os.Remove(cacheFile(k))
 	}
 }
+
+// commentOn adds a comment to any issue, without a tk session (tk comment).
+func (g *githubBackend) commentOn(key, text string) error {
+	n, err := g.number(key)
+	if err != nil {
+		return err
+	}
+	return g.comment(n, text)
+}

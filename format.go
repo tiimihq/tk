@@ -104,17 +104,30 @@ func formatResume(hc heartbeatContext, maxSummary int) string {
 	if hc.TaskQuestionContext != nil && len(hc.TaskQuestionContext.Questions) > 0 {
 		fmt.Fprintf(&b, "Open questions: %d\n", len(hc.TaskQuestionContext.Questions))
 	}
-	if hc.CommentCursor != nil && hc.CommentCursor.TotalComments > 0 {
-		fmt.Fprintf(&b, "Comments: %d, latest %s\n", hc.CommentCursor.TotalComments, shortTime(hc.CommentCursor.LatestCommentAt))
+	total := 0
+	if hc.CommentCursor != nil {
+		total = hc.CommentCursor.TotalComments
 	}
 	if hc.ContinuationSummary != nil {
 		if s := compactSummary(hc.ContinuationSummary.Body, maxSummary); s != "" {
+			if first, rest, _ := strings.Cut(s, "\n"); first == "Notes:" && total > 0 { // tk's own list of comments
+				label := fmt.Sprintf("All %d comments, oldest first (latest %s):", total, shortTime(hc.CommentCursor.LatestCommentAt))
+				if strings.HasPrefix(rest, "(") {
+					label = fmt.Sprintf("Comments (%d, newest that fit; tk show %s for all):", total, is.Identifier)
+					_, rest, _ = strings.Cut(rest, "\n")
+				}
+				s = label + "\n" + rest
+				total = 0
+			}
 			if first, _, _ := strings.Cut(s, "\n"); !strings.HasSuffix(first, ":") {
 				b.WriteString("Summary:\n") // a summary that has no heading of its own
 			}
 			b.WriteString(s)
 			b.WriteString("\n")
 		}
+	}
+	if total > 0 { // comments counted but not listed (e.g. Paperclip)
+		fmt.Fprintf(&b, "Comments: %d, latest %s\n", total, shortTime(hc.CommentCursor.LatestCommentAt))
 	}
 	return cleanText(strings.TrimRight(b.String(), "\n"))
 }
@@ -159,11 +172,41 @@ func compactSummary(body string, maxChars int) string {
 		}
 		kept = append(kept, strings.Join(strings.Fields(line), " "))
 	}
-	out := strings.Join(dropEmptySections(kept), "\n")
-	if maxChars > 0 && len(out) > maxChars {
-		out = strings.TrimSpace(out[:maxChars]) + " … (tk resume --full)"
+	kept = dropEmptySections(kept)
+	out := strings.Join(kept, "\n")
+	if maxChars <= 0 || len(out) <= maxChars {
+		return out
 	}
-	return out
+	// One list of notes (tk's own briefs): keep the newest notes that fit, since the
+	// latest handoff matters most, and say how many earlier ones were left out.
+	if len(kept) > 1 && strings.HasSuffix(kept[0], ":") && allBullets(kept[1:]) {
+		notes := kept[1:]
+		size, i := len(kept[0]), len(notes)
+		for i > 0 && size+len(notes[i-1])+1 <= maxChars {
+			size += len(notes[i-1]) + 1
+			i--
+		}
+		if i == len(notes) { // even the newest note is too long: keep its start
+			last := notes[i-1]
+			notes[i-1] = strings.TrimSpace(last[:max(2, min(len(last), maxChars-len(kept[0])))]) + " …"
+			i--
+		}
+		head := kept[0]
+		if i > 0 {
+			head += fmt.Sprintf("\n(%d earlier notes: tk show)", i)
+		}
+		return head + "\n" + strings.Join(notes[i:], "\n")
+	}
+	return strings.TrimSpace(out[:maxChars]) + " … (tk show)"
+}
+
+func allBullets(lines []string) bool {
+	for _, l := range lines {
+		if !strings.HasPrefix(l, "- ") {
+			return false
+		}
+	}
+	return true
 }
 
 // sectionMarker tags heading lines inside compactSummary so empty sections can be dropped.

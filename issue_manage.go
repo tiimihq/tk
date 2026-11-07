@@ -213,8 +213,9 @@ func formatListLine(d issueDetail) string {
 
 func cmdList(be backend, flags map[string]bool) error {
 	m, err := requireManager(be)
-	if err != nil {
-		return err
+	if err != nil { // a remote tracker: tk lists what is assigned to you there
+		fmt.Printf("(%s: your assigned issues; the full list is in the tracker)\n", be.name())
+		return cmdNext(be, flags)
 	}
 	items, err := m.listIssues(flags["all"])
 	if err != nil {
@@ -274,7 +275,20 @@ func cmdEdit(be backend, key string, assigns []string) error {
 	return nil
 }
 
+// commenter is a remote tracker that can comment on any issue without a session.
+type commenter interface{ commentOn(key, text string) error }
+
 func cmdComment(be backend, key, text string) error {
+	if strings.TrimSpace(text) == "" {
+		return errors.New(`usage: tk comment <KEY> "<text>"`)
+	}
+	if c, ok := be.(commenter); ok {
+		if err := c.commentOn(key, strings.TrimSpace(text)); err != nil {
+			return err
+		}
+		fmt.Printf("%s comment added\n", key)
+		return nil
+	}
 	m, err := requireManager(be)
 	if err != nil {
 		return err

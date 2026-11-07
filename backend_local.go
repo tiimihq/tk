@@ -158,8 +158,8 @@ func (l *localBackend) context(key string) (heartbeatContext, error) {
 		hc.Issue = li.toIssue()
 		if n := len(li.Comments); n > 0 {
 			var b strings.Builder
-			b.WriteString("## Recent notes\n")
-			for _, c := range li.Comments[max(0, n-5):] {
+			b.WriteString("## Notes\n")
+			for _, c := range li.Comments { // all of them: the brief keeps the newest that fit
 				b.WriteString("- " + oneLine(c.Body) + "\n")
 			}
 			hc.ContinuationSummary = &struct {

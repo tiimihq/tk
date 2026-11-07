@@ -99,7 +99,8 @@ func (f *fakeLinear) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		for i := 1; i <= f.counter; i++ {
 			is := f.issues[fmt.Sprintf("ENG-%d", i)]
 			st := f.state(is.StateID)
-			if is.Assignee == f.viewer && (st.Type == "unstarted" || st.Type == "started") {
+			wanted := strings.Contains(q, `"`+st.Type+`"`) // honour the query's state filter
+			if is.Assignee == f.viewer && wanted && (st.Type == "backlog" || st.Type == "unstarted" || st.Type == "started") {
 				nodes = append(nodes, map[string]any{"identifier": is.Identifier, "title": is.Title, "priority": 3, "state": st})
 			}
 		}
@@ -304,5 +305,23 @@ func writeTestConfig(t *testing.T, body string) {
 	t.Helper()
 	if err := writeFileAll(configPath(), body); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestLinearInboxIncludesBacklogInProgressFirst(t *testing.T) {
+	f, _, be := setupLinear(t)
+	f.add("Triage later", "st-backlog", "user-me")
+	f.add("Already going", "st-prog", "user-me")
+	items, err := be.inbox()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var titles []string
+	for _, it := range items {
+		titles = append(titles, it.Title)
+	}
+	got := strings.Join(titles, " | ")
+	if got != "Already going | Add cursor pagination | Triage later" {
+		t.Fatalf("inbox order = %q (want started, then todo, then backlog)", got)
 	}
 }

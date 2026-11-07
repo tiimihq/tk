@@ -123,10 +123,9 @@ type timedComment struct{ Body, At string }
 func contextFromComments(is issue, comments []timedComment) heartbeatContext {
 	hc := heartbeatContext{Issue: is}
 	if n := len(comments); n > 0 {
-		recent := comments[max(0, n-5):]
 		var b strings.Builder
-		b.WriteString("## Recent notes\n")
-		for _, c := range recent {
+		b.WriteString("## Notes\n")
+		for _, c := range comments {
 			b.WriteString("- " + oneLine(strings.TrimPrefix(c.Body, agentNotePrefix)) + "\n")
 		}
 		hc.ContinuationSummary = &struct {
