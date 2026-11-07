@@ -80,7 +80,7 @@ func readCodexUsage(files []string, since, until time.Time) ([]claudeMessage, er
 		if err != nil {
 			return nil, err
 		}
-		model := ""
+		model, branch, cwd, session := "", "", "", ""
 		sc := bufio.NewScanner(fh)
 		sc.Buffer(make([]byte, 1024*1024), 64*1024*1024)
 		for sc.Scan() {
@@ -88,6 +88,11 @@ func readCodexUsage(files []string, since, until time.Time) ([]claudeMessage, er
 				Type      string `json:"type"`
 				Timestamp string `json:"timestamp"`
 				Payload   struct {
+					ID  string `json:"id"`
+					Cwd string `json:"cwd"`
+					Git *struct {
+						Branch string `json:"branch"`
+					} `json:"git"`
 					Model      string `json:"model"`
 					ResponseID string `json:"response_id"`
 					Usage      *struct {
@@ -102,6 +107,12 @@ func readCodexUsage(files []string, since, until time.Time) ([]claudeMessage, er
 				continue
 			}
 			switch rec.Type {
+			case "session_meta":
+				cwd, session = rec.Payload.Cwd, rec.Payload.ID
+				if rec.Payload.Git != nil {
+					branch = rec.Payload.Git.Branch
+				}
+				continue
 			case "turn_context":
 				if rec.Payload.Model != "" {
 					model = rec.Payload.Model
@@ -133,7 +144,8 @@ func readCodexUsage(files []string, since, until time.Time) ([]claudeMessage, er
 				m = "codex-unknown-model"
 			}
 			out = append(out, claudeMessage{Key: key, Provider: "openai", Model: m, At: at,
-				Input: fresh, CacheRead: u.Cached, CacheWrite: u.CacheWrite, Output: u.Output})
+				Input: fresh, CacheRead: u.Cached, CacheWrite: u.CacheWrite, Output: u.Output,
+				Branch: branch, Cwd: cwd, Session: session})
 		}
 		fh.Close()
 		if err := sc.Err(); err != nil {

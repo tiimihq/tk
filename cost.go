@@ -26,6 +26,8 @@ type claudeMessage struct {
 	CacheWrite5m int64
 	Output       int64
 	Tier         string // service tier when the log names one ("standard", "priority", "fast")
+	// Where the reply happened, when the log says (tk receipt groups by these).
+	Branch, Cwd, Session string
 }
 
 var nonPathChars = regexp.MustCompile(`[^A-Za-z0-9-]`)
@@ -88,6 +90,9 @@ func readClaudeUsage(files []string, since, until time.Time) ([]claudeMessage, e
 				Type      string `json:"type"`
 				RequestID string `json:"requestId"`
 				Timestamp string `json:"timestamp"`
+				GitBranch string `json:"gitBranch"`
+				Cwd       string `json:"cwd"`
+				SessionID string `json:"sessionId"`
 				Message   struct {
 					ID    string `json:"id"`
 					Model string `json:"model"`
@@ -119,7 +124,8 @@ func readClaudeUsage(files []string, since, until time.Time) ([]claudeMessage, e
 			seen[key] = true
 			u := rec.Message.Usage
 			m := claudeMessage{Key: key, Model: rec.Message.Model, At: at,
-				Input: u.Input, CacheRead: u.CacheRead, CacheWrite: u.CacheWrite, Output: u.Output, Tier: u.ServiceTier}
+				Input: u.Input, CacheRead: u.CacheRead, CacheWrite: u.CacheWrite, Output: u.Output, Tier: u.ServiceTier,
+				Branch: rec.GitBranch, Cwd: rec.Cwd, Session: rec.SessionID}
 			if u.CacheCreation != nil {
 				m.CacheWrite5m = min(u.CacheCreation.FiveMin, u.CacheWrite)
 			}

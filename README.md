@@ -100,6 +100,7 @@ estimates**: on a Claude or ChatGPT subscription you don't pay per token, but th
 each issue costs relative to others.
 
 - Tokens are stored too, so cost can be recomputed when prices change.
+- `tk receipt` shows what your agents cost per issue over the last 30 days, straight from their logs: no setup. Issues come from branch names (`eng-142-fix-login`, `123-fix-login`).
 - `tk cost update` downloads the latest prices (the LiteLLM list ccusage also uses) and shows what
   changed. tk never downloads prices on its own. Your own rates go in `~/.tk/prices.json`.
 - A model tk can't price is shown as "not priced", never as $0.00.

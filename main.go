@@ -28,6 +28,7 @@ Issues on this machine (local mode):
   tk list [--all] | tk edit <KEY> field=value... | tk comment <KEY> "<text>" | tk cancel <KEY> [reason]
 
 Cost:
+  tk receipt [--7d|--30d|--90d|--all] [--full]   what your agents cost per issue, from their logs (no setup)
   tk cost                    record this session's token usage now (tkd does it every 30s)
   tk cost update             download the latest model prices and show what changed
 
@@ -80,6 +81,9 @@ func main() {
 		return
 	case args[0] == "status":
 		check(cmdStatus())
+		return
+	case args[0] == "receipt": // reads agent logs only; needs no backend
+		check(cmdReceipt(flags))
 		return
 	case args[0] == "cost" && len(args) > 1 && args[1] == "update": // needs no backend
 		check(cmdCostUpdate())
