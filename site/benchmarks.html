@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tiimi benchmarks</title>
+<meta name="description" content="How many tokens, dollars and seconds an AI coding agent spends on the same issue-tracker workflow through tk, Beads, the gh CLI, and the GitHub and Linear MCP servers.">
+<meta property="og:title" content="Tiimi benchmarks: what your tracker costs your agent">
+<meta property="og:description" content="Same workflow, same issue. tk used 44–68% fewer tracker tokens than Beads, the GitHub MCP and the Linear MCP.">
+<meta property="og:url" content="https://tiimi.dev/benchmarks">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>
+<style>
+:root {
+  --bg: #f6f5f0; --surface: #ffffff; --ink: #171a17; --muted: #5d625c; --line: #dcdad1;
+  --accent: #3f7d12; --accent-soft: #e6f2d6; --code-bg: #171a17; --code-ink: #e9ebe4; --code-dim: #8d948a; --code-accent: #b6f06b;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111311; --surface: #181b18; --ink: #e9ebe4; --muted: #9aa196; --line: #2a2e29;
+    --accent: #b6f06b; --accent-soft: #1f2a15; --code-bg: #0b0d0b;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111311; --surface: #181b18; --ink: #e9ebe4; --muted: #9aa196; --line: #2a2e29;
+  --accent: #b6f06b; --accent-soft: #1f2a15; --code-bg: #0b0d0b;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 var(--sans); }
+a { color: inherit; text-underline-offset: 3px; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+header.top { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; letter-spacing: -0.01em; text-decoration: none; }
+.brand svg { width: 26px; height: 26px; }
+nav a { color: var(--muted); text-decoration: none; margin-left: 20px; font-size: 15px; }
+nav a:hover { color: var(--ink); }
+.hero { padding: 56px 0 40px; }
+.tag { display: inline-block; font: 600 12px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); padding: 7px 10px; border-radius: 99px; }
+h1 { font-size: clamp(38px, 7vw, 64px); line-height: 1.04; letter-spacing: -0.035em; margin: 18px 0 18px; max-width: 13ch; }
+.lede { font-size: clamp(18px, 2.4vw, 21px); color: var(--muted); max-width: 40em; margin: 0 0 30px; }
+.lede strong { color: var(--ink); font-weight: 600; }
+.install { background: var(--code-bg); color: var(--code-ink); border-radius: 12px; overflow: hidden; max-width: 640px; }
+.tabs { display: flex; border-bottom: 1px solid #2a2e29; overflow-x: auto; }
+.tabs button { background: none; border: 0; color: var(--code-dim); font: 500 13px var(--mono); padding: 11px 16px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+.tabs button[aria-selected="true"] { color: var(--code-ink); border-bottom-color: var(--code-accent); }
+.cmd { display: flex; align-items: center; gap: 12px; padding: 16px 16px 16px 18px; }
+.cmd code { flex: 1; font: 15px/1.5 var(--mono); overflow-x: auto; white-space: nowrap; }
+.cmd code::before { content: "$ "; color: var(--code-dim); }
+.copy { background: #262a25; color: var(--code-ink); border: 0; border-radius: 7px; font: 500 12px var(--mono); padding: 7px 10px; cursor: pointer; }
+.copy:hover { background: #343932; }
+.demo { margin: 8px 0 56px; }
+.demo video { width: 100%; border-radius: 12px; display: block; background: var(--code-bg); border: 1px solid var(--line); }
+.demo figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; }
+.note { font-size: 14px; color: var(--muted); margin: 12px 2px 0; }
+section { padding: 52px 0; border-top: 1px solid var(--line); }
+h2 { font-size: clamp(26px, 4vw, 34px); letter-spacing: -0.02em; line-height: 1.15; margin: 0 0 12px; }
+.sub { color: var(--muted); max-width: 42em; margin: 0 0 28px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+@media (max-width: 760px) { .grid { grid-template-columns: 1fr; } nav a:not(.gh) { display: none; } }
+pre.term { margin: 0; background: var(--code-bg); color: var(--code-ink); border-radius: 12px; padding: 18px; font: 13.5px/1.55 var(--mono); overflow-x: auto; }
+.term .d { color: var(--code-dim); } .term .a { color: var(--code-accent); }
+.steps { list-style: none; margin: 0; padding: 0; }
+.steps li { display: grid; grid-template-columns: 116px 1fr; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+.steps li:last-child { border-bottom: 0; }
+.steps code { font: 600 14px var(--mono); color: var(--accent); }
+.steps span { color: var(--muted); font-size: 15.5px; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 760px) { .cards { grid-template-columns: 1fr; } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+.card h3 { margin: 0 0 8px; font-size: 17px; }
+.card p { margin: 0; color: var(--muted); font-size: 15px; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th, td { text-align: left; padding: 11px 12px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+td.s { color: var(--muted); white-space: nowrap; }
+.pill { font: 600 11px var(--mono); padding: 3px 7px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
+.tablewrap { overflow-x: auto; }
+footer { border-top: 1px solid var(--line); padding: 30px 0 50px; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 8px 22px; }
+footer a { color: var(--muted); }
+.bars { display: grid; gap: 22px; margin: 8px 0 8px; }
+.group h3 { margin: 0 0 10px; font-size: 16px; }
+.bar { display: grid; grid-template-columns: 150px 1fr 70px; gap: 12px; align-items: center; font-size: 14.5px; margin: 6px 0; }
+.bar .track { background: var(--line); border-radius: 6px; height: 14px; overflow: hidden; }
+.bar .fill { height: 100%; border-radius: 6px; background: var(--muted); opacity: .55; }
+.bar.tk .fill { background: var(--accent); opacity: 1; }
+.bar.tk .name { font-weight: 700; }
+.bar .val { font-family: var(--mono); font-size: 13.5px; text-align: right; }
+@media (max-width: 560px) { .bar { grid-template-columns: 110px 1fr 56px; font-size: 13.5px; } }
+td.num, th.num { text-align: right; font-family: var(--mono); font-size: 14px; white-space: nowrap; }
+tr.tk td { font-weight: 600; }
+.callout { background: var(--accent-soft); border-radius: 12px; padding: 18px 20px; margin: 0 0 28px; }
+.callout p { margin: 0; }
+ul.caveats { color: var(--muted); padding-left: 20px; }
+ul.caveats li { margin: 6px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/" aria-label="Tiimi home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#171a17"/><circle cx="11" cy="16" r="4.5" fill="#b6f06b"/><circle cx="21" cy="16" r="4.5" fill="none" stroke="#b6f06b" stroke-width="2.4"/></svg>
+      Tiimi
+    </a>
+    <nav>
+      <a href="/#how">How it works</a>
+      <a href="/#trackers">Trackers</a>
+      <a href="/benchmarks">Benchmarks</a>
+      <a class="gh" href="https://github.com/tiimihq/tk">GitHub</a>
+    </nav>
+  </header>
+
+  <div class="hero" style="padding-bottom:24px">
+    <span class="tag">Benchmark · November 2026</span>
+    <h1 style="max-width:16ch">What your tracker costs your agent.</h1>
+    <p class="lede">Every time a coding agent reads an issue, posts progress or hands work off, the tracker integration spends tokens: tool definitions, instructions, JSON. We gave Claude Code the <strong>same job through five integrations</strong> and measured tokens, dollars and seconds.</p>
+  </div>
+
+  <section style="padding-top:36px">
+    <div class="callout"><p><strong>The job:</strong> find the open issue about EU refunds, read it with its full history (8 comments), record a given progress note, and hand the issue back for the next session. Claude Code, Sonnet 5.5, 3 runs each, medians. Every run passed.</p></div>
+    <h2>Tracker tokens per job</h2>
+    <p class="sub">Input tokens the agent processed for the tracker, above Claude Code's own 16k fixed cost (measured with no tracker). Lower is better.</p>
+    <div class="bars">
+<div class="group"><h3>On your machine</h3>
+<div class="bar tk"><span class="name">tk</span><span class="track"><span class="fill" style="width:29.8%"></span></span><span class="val">42k</span></div>
+<div class="bar"><span class="name">Beads</span><span class="track"><span class="fill" style="width:53.2%"></span></span><span class="val">75k</span></div>
+</div>
+<div class="group"><h3>GitHub Issues</h3>
+<div class="bar tk"><span class="name">tk</span><span class="track"><span class="fill" style="width:31.2%"></span></span><span class="val">44k</span></div>
+<div class="bar"><span class="name">gh CLI</span><span class="track"><span class="fill" style="width:44.7%"></span></span><span class="val">63k</span></div>
+<div class="bar"><span class="name">GitHub MCP</span><span class="track"><span class="fill" style="width:97.2%"></span></span><span class="val">137k</span></div>
+</div>
+<div class="group"><h3>Linear</h3>
+<div class="bar tk"><span class="name">tk</span><span class="track"><span class="fill" style="width:31.9%"></span></span><span class="val">45k</span></div>
+<div class="bar"><span class="name">Linear MCP</span><span class="track"><span class="fill" style="width:100.0%"></span></span><span class="val">141k</span></div>
+</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>All the numbers</h2>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>Integration</th><th class="num">Tracker tokens</th><th class="num">Cost</th><th class="num">Time</th><th class="num">Turns</th></tr></thead>
+      <tbody>
+        <tr class="tk"><td>tk (local)</td><td class="num">42k</td><td class="num">$0.051</td><td class="num">9.7 s</td><td class="num">3</td></tr>
+        <tr><td>Beads 1.3.4</td><td class="num">75k</td><td class="num">$0.066</td><td class="num">11.2 s</td><td class="num">4</td></tr>
+        <tr class="tk"><td>tk on GitHub Issues</td><td class="num">44k</td><td class="num">$0.049</td><td class="num">18.1 s</td><td class="num">3</td></tr>
+        <tr><td><code>gh</code> CLI</td><td class="num">63k</td><td class="num">$0.059</td><td class="num">15.9 s</td><td class="num">4</td></tr>
+        <tr><td>GitHub MCP (remote)</td><td class="num">137k</td><td class="num">$0.104</td><td class="num">25.0 s</td><td class="num">8</td></tr>
+        <tr class="tk"><td>tk on Linear</td><td class="num">45k</td><td class="num">$0.053</td><td class="num">18.1 s</td><td class="num">3</td></tr>
+        <tr><td>Linear MCP (remote)</td><td class="num">141k</td><td class="num">$0.099</td><td class="num">24.0 s</td><td class="num">8</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="note">Against Beads: 44% fewer tracker tokens, 23% lower cost, 13% faster. Against the GitHub and Linear MCP servers: 68% fewer tokens, about half the cost, about a quarter faster. Against the <code>gh</code> CLI: 30% fewer tokens and 17% lower cost, but about 2 seconds slower, because tk also moves the issue and labels it.</p>
+  </section>
+
+  <section>
+    <h2>Why the difference</h2>
+    <div class="cards">
+      <div class="card"><h3>A brief, not a manual</h3><p>tk's session-start brief is about 200 tokens: your issues plus a one-line command card. Beads injects about 2k tokens of instructions every session; MCP servers ship tool definitions.</p></div>
+      <div class="card"><h3>Text built for agents</h3><p><code>tk show</code> returns the issue and every comment as plain lines, about 1.7k characters here. The same issue as JSON from <code>gh</code> or Beads was 4.3–4.5k.</p></div>
+      <div class="card"><h3>Fewer round trips</h3><p>The agent did the job in 3 turns every time with tk. The MCP servers took 8: search, fetch, fetch comments, update, comment, check.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Read this before quoting the numbers</h2>
+    <ul class="caveats">
+      <li><strong>tk was improved during this benchmark; the others were not.</strong> The first tk runs (v0.1.1) were worse than Beads: agents ran <code>tk --help</code>, re-read the issue, and on Linear could not see a backlog issue at all. We fixed what the traces showed and re-ran with v0.1.2. The earlier runs are in the raw results.</li>
+      <li>One workflow, one small issue, one model, 3 runs each. Longer histories or other agents will move the numbers. Cursor loads every MCP tool definition on every request; Claude Code loads them on demand, which helps the MCP servers here.</li>
+      <li>Each tool used its official setup: <code>tk init</code>, <code>bd setup claude</code>, GitHub's and Linear's remote MCP servers, the <code>gh</code> CLI. Only each project's own settings applied.</li>
+      <li>Costs are Claude API list prices. Total spend for every run, including the earlier ones: $2.41.</li>
+    </ul>
+    <p class="note">Method, prompts, seed data, raw results and the script to re-run it: <a href="https://github.com/tiimihq/tk/tree/main/bench/trackers">github.com/tiimihq/tk/bench/trackers</a>.</p>
+  </section>
+
+  <footer>
+    <span>Tiimi: "team" in Finnish.</span>
+    <a href="https://github.com/tiimihq/tk">Source</a>
+    <a href="https://github.com/tiimihq/tk/blob/main/SECURITY.md">Security</a>
+    <a href="https://github.com/tiimihq/tk/blob/main/LICENSE">MIT license</a>
+  </footer>
+</div>
+</body>
+</html>

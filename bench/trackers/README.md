@@ -42,7 +42,7 @@ Against each alternative, tk used:
   `--full`, and on Linear could not see a backlog issue at all (0/3). We fixed what the
   traces showed (a command card in the session brief, `tk show` with all comments clearly
   labelled, one-line help, `tk comment` on every tracker, backlog in the Linear inbox) and
-  re-ran. Those earlier rows are kept in `results.jsonl`, labelled.
+  re-ran with v0.1.2. Those earlier rows are kept in `results.jsonl`, labelled.
 - One workflow, one small issue, one model, 3 runs each. Bigger issues, longer histories
   or other agents (Cursor loads every MCP tool definition on every request; Claude Code
   defers them) will move the numbers.
