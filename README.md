@@ -138,8 +138,7 @@ Sonnet 5.5, median of 3 runs. Tokens are the tracker's share, above Claude Code'
 | tk on Linear | 45k | $0.053 | 18.1 s |
 | Linear MCP | 141k | $0.099 | 24.0 s |
 
-Method, caveats (tk was tuned during the benchmark; one workflow, small issue) and raw
-results: [bench/trackers](bench/trackers/README.md).
+Method, raw results and the script to re-run it: [bench/trackers](bench/trackers/README.md).
 
 ## Tiimi and Beads
 

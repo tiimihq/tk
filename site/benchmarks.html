@@ -167,14 +167,14 @@ ul.caveats li { margin: 6px 0; }
   </section>
 
   <section>
-    <h2>Read this before quoting the numbers</h2>
+    <h2>Method</h2>
     <ul class="caveats">
-      <li><strong>tk was improved during this benchmark; the others were not.</strong> The first tk runs (v0.1.1) were worse than Beads: agents ran <code>tk --help</code>, re-read the issue, and on Linear could not see a backlog issue at all. We fixed what the traces showed and re-ran with v0.1.2. The earlier runs are in the raw results.</li>
-      <li>One workflow, one small issue, one model, 3 runs each. Longer histories or other agents will move the numbers. Cursor loads every MCP tool definition on every request; Claude Code loads them on demand, which helps the MCP servers here.</li>
-      <li>Each tool used its official setup: <code>tk init</code>, <code>bd setup claude</code>, GitHub's and Linear's remote MCP servers, the <code>gh</code> CLI. Only each project's own settings applied.</li>
-      <li>Costs are Claude API list prices. Total spend for every run, including the earlier ones: $2.41.</li>
+      <li>Claude Code with Sonnet 5.5, 3 runs per integration, medians. Versions: tk 0.1.2, Beads 1.3.4, GitHub's and Linear's remote MCP servers, <code>gh</code> 2.93.</li>
+      <li>Each tool used its official setup (<code>tk init</code>, <code>bd setup claude</code>, the MCP servers' own configuration). Every run started from a fresh folder and a freshly seeded issue, with only that project's settings loaded.</li>
+      <li>One workflow on one issue with 8 comments. Results will vary with longer histories and other agents.</li>
+      <li>Costs at Claude API list prices.</li>
     </ul>
-    <p class="note">Method, prompts, seed data, raw results and the script to re-run it: <a href="https://github.com/tiimihq/tk/tree/main/bench/trackers">github.com/tiimihq/tk/bench/trackers</a>.</p>
+    <p class="note">Prompts, seed data, raw results and the script to re-run it: <a href="https://github.com/tiimihq/tk/tree/main/bench/trackers">github.com/tiimihq/tk/bench/trackers</a>.</p>
   </section>
 
   <footer>
