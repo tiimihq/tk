@@ -12,7 +12,7 @@ tokens and dollars, in the tracker your team already uses. No second tracker to 
 
 <sub>Demo on a sample project with made-up logs; re-record it with `demo/record.sh`.</sub>
 
-> Status: preview. Commands and file formats may still change. Site: [tiimi.dev](https://tiimi.dev)
+> Status: preview (v0.1.2). Commands and file formats may still change. Site: [tiimi.dev](https://tiimi.dev)
 
 ## Install
 
