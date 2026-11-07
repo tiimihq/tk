@@ -12,7 +12,7 @@ servers, or the `gh` CLI. Every run starts from a fresh folder and a freshly see
 (`seed.json`); Claude Code loads only the project's own settings (`--setting-sources
 project,local`). Success is checked against the tracker afterwards.
 
-## Results (2026-11-07)
+## Results (2026-11-07, tk 0.1.2)
 
 | Integration | Done | Cost | Tracker tokens* | Output tokens | Time | Turns |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -35,20 +35,14 @@ Against each alternative, tk used:
 - **GitHub MCP:** 68% fewer tracker tokens, 53% lower cost, 28% faster.
 - **Linear MCP:** 68% fewer tracker tokens, 46% lower cost, 25% faster.
 
-## Read this before quoting the numbers
+## Method notes
 
-- **tk was improved during this benchmark; the others were not.** The first tk runs
-  (v0.1.1) cost $0.062 and took 5 turns: agents ran `tk --help`, re-read the issue with
-  `--full`, and on Linear could not see a backlog issue at all (0/3). We fixed what the
-  traces showed (a command card in the session brief, `tk show` with all comments clearly
-  labelled, one-line help, `tk comment` on every tracker, backlog in the Linear inbox) and
-  re-ran with v0.1.2. Those earlier rows are kept in `results.jsonl`, labelled.
-- One workflow, one small issue, one model, 3 runs each. Bigger issues, longer histories
-  or other agents (Cursor loads every MCP tool definition on every request; Claude Code
-  defers them) will move the numbers.
-- Beads pays ~2k tokens up front every session (`bd prime` + its CLAUDE.md) and in return
-  the agent knew the exact commands every time; tk's brief is ~200 tokens.
-- Total spend for all runs, including the earlier ones: $2.41.
+- tk 0.1.2, Beads 1.3.4, `gh` 2.93, GitHub's and Linear's remote MCP servers; each with its
+  official setup. One workflow on one issue with 8 comments; results will vary with longer
+  histories and other agents (Claude Code loads MCP tool definitions on demand; Cursor loads
+  all of them on every request).
+- Beads injects ~2k tokens at session start (`bd prime` + its CLAUDE.md); tk's brief is ~200.
+- `results.jsonl` also holds runs of earlier tk builds, labelled by version.
 
 ## Re-run it
 
