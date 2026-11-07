@@ -818,7 +818,7 @@ func cmdInit(flags map[string]bool) error {
 			found = append(found, r)
 		}
 	}
-	fmt.Printf("tk init in %s (mode: %s)\n", c.root, configuredMode())
+	fmt.Printf("tk init in %s (mode: %s)\n", tildePath(c.root), configuredMode())
 	if len(found) == 0 {
 		fmt.Println("No coding agents found (Claude Code, Codex, Cursor, Gemini CLI, OpenCode). Add one with: tk setup <recipe>")
 	}
@@ -842,15 +842,26 @@ func cmdInit(flags map[string]bool) error {
 			sort.Strings(names)
 			state = strings.Join(names, ", ")
 		}
-		fmt.Printf("  ✓ %-12s %s (found: %s) | usage %s\n", r.label, state, detectedBy(r, c.home), r.usage)
+		fmt.Printf("  ✓ %-12s %-22s %s\n", r.label, costNote(r.usage), state)
 		if r.name == "codex" && !codexProjectTrusted(c.home, c.root) {
 			fmt.Println(codexTrustNote)
 		}
 	}
-	fmt.Println("Other tools: tk setup --list.  Background sync and idle hand-back: tk daemon install.")
+	fmt.Println("More agents: tk setup --list.  Background cost sync: tk daemon install.")
 	fmt.Println("Restart running agents so they load the new hooks and instructions.")
 	if len(failed) > 0 {
 		return errors.New(strings.Join(failed, "; "))
 	}
 	return nil
+}
+
+// costNote says in a few words whether tk can count this agent's cost.
+func costNote(usage string) string {
+	switch {
+	case strings.Contains(usage, "beta") && strings.HasPrefix(usage, "captured"):
+		return "cost per issue (beta)"
+	case strings.HasPrefix(usage, "captured"):
+		return "cost per issue"
+	}
+	return "brief only, no cost data"
 }

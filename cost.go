@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -296,13 +297,13 @@ func splitByPriced(group []claudeMessage) [][]claudeMessage {
 
 func sessionCostLine(msgs []claudeMessage, newReplies int, dir string) string {
 	if len(msgs) == 0 {
-		return "cost: no agent usage yet in " + dir
+		return "cost: no agent replies logged for this session yet"
 	}
-	var in, cached, write, out int64
+	var tokens int64
 	total := new(big.Rat)
 	unpriced := 0
 	for _, m := range msgs {
-		in, cached, write, out = in+m.Input, cached+m.CacheRead, write+m.CacheWrite, out+m.Output
+		tokens += m.Input + m.CacheRead + m.CacheWrite + m.Output
 		if cents, _ := priceCents(m); cents != "" {
 			r, _ := new(big.Rat).SetString(cents)
 			total.Add(total, r)
@@ -310,16 +311,30 @@ func sessionCostLine(msgs []claudeMessage, newReplies int, dir string) string {
 			unpriced++
 		}
 	}
-	usd := new(big.Rat).Quo(total, big.NewRat(100, 1)).FloatString(2)
-	price := "~$" + usd + " API-equivalent"
+	f, _ := total.Float64()
+	price := "~" + dollars(f) + " this session"
 	switch {
 	case unpriced == len(msgs): // unknown, not free
-		price = "not priced (model not in the rate card)"
+		price = "not priced (model not in the rate card; tk cost update)"
 	case unpriced > 0:
 		price += fmt.Sprintf(" + %d unpriced replies", unpriced)
 	}
-	return fmt.Sprintf("cost: %d replies (%d new) | in %d | cache read %d | cache write %d | out %d | %s",
-		len(msgs), newReplies, in, cached, write, out, price)
+	replies := fmt.Sprintf("%d replies", len(msgs))
+	if len(msgs) == 1 {
+		replies = "1 reply"
+	}
+	return fmt.Sprintf("cost: %s · %s · %s tokens", price, replies, shortCount(tokens))
+}
+
+// shortCount writes 4612000 as 4.6M and 12400 as 12k.
+func shortCount(n int64) string {
+	switch {
+	case n >= 1_000_000:
+		return strconv.FormatFloat(float64(n)/1e6, 'f', 1, 64) + "M"
+	case n >= 10_000:
+		return strconv.FormatInt((n+500)/1000, 10) + "k"
+	}
+	return strconv.FormatInt(n, 10)
 }
 
 func cmdCost(be backend, args []string) error {

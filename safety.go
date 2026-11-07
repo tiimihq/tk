@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -46,4 +48,22 @@ func shellQuote(s string) string {
 		return s
 	}
 	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
+}
+
+// tildePath shows a path under the home folder as ~/..., for shorter output.
+func tildePath(p string) string {
+	home, err := os.UserHomeDir()
+	if err != nil || home == "" {
+		return p
+	}
+	home = filepath.Clean(home)
+	for _, h := range []string{home, realPath(home)} {
+		if p == h {
+			return "~"
+		}
+		if rel, ok := strings.CutPrefix(p, h+string(filepath.Separator)); ok {
+			return "~" + string(filepath.Separator) + rel
+		}
+	}
+	return p
 }

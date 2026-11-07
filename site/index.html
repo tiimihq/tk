@@ -50,6 +50,9 @@ h1 { font-size: clamp(38px, 7vw, 64px); line-height: 1.04; letter-spacing: -0.03
 .cmd code::before { content: "$ "; color: var(--code-dim); }
 .copy { background: #262a25; color: var(--code-ink); border: 0; border-radius: 7px; font: 500 12px var(--mono); padding: 7px 10px; cursor: pointer; }
 .copy:hover { background: #343932; }
+.demo { margin: 8px 0 56px; }
+.demo video { width: 100%; border-radius: 12px; display: block; background: var(--code-bg); border: 1px solid var(--line); }
+.demo figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; }
 .note { font-size: 14px; color: var(--muted); margin: 12px 2px 0; }
 section { padding: 52px 0; border-top: 1px solid var(--line); }
 h2 { font-size: clamp(26px, 4vw, 34px); letter-spacing: -0.02em; line-height: 1.15; margin: 0 0 12px; }
@@ -108,6 +111,11 @@ footer a { color: var(--muted); }
     </div>
     <p class="note">One binary, <code>tk</code>, for macOS, Linux and Windows. The installer verifies the checksum and never needs sudo. MIT licensed.</p>
   </div>
+
+  <figure class="demo">
+    <video src="demo.mp4" poster="demo-poster.png" autoplay muted loop playsinline controls aria-label="Demo: tk receipt shows cost per issue, then Claude Code hands an issue off to Codex"></video>
+    <figcaption>50 seconds: <code>tk receipt</code> on existing logs, then Claude Code hands an issue to Codex. Sample project, made-up logs.</figcaption>
+  </figure>
 
   <section id="how">
     <h2>One minute, no account</h2>
@@ -168,6 +176,7 @@ Recent notes:
       <div>
         <p class="sub" style="margin-bottom:14px">Tiimi prices every reply at the provider's standard API list price on that day and adds it to the issue. On a subscription you don't pay per token, but the numbers still show what each issue costs relative to others.</p>
         <ul class="sub" style="padding-left:20px;margin:0">
+          <li><code>tk receipt</code> shows the last 30 days per issue right after install, from the logs your agents already wrote. Issues come from branch names.</li>
           <li>Tokens are stored too, so cost can be recomputed when prices change.</li>
           <li><code>tk cost update</code> fetches the latest prices and shows what changed. Never automatic.</li>
           <li>A model Tiimi can't price shows as "not priced", never $0.00.</li>

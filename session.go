@@ -190,11 +190,11 @@ func cmdStart(be backend, key string) error {
 	if err != nil {
 		return err
 	}
-	link := "no Claude session hook; cost read from the project's logs"
 	if s.ClaudeSessionID != "" {
-		link = toolLabel(s.AgentTool) + " session " + short(s.ClaudeSessionID)
+		fmt.Printf("%s started | %s session %s\n", s.Key, toolLabel(s.AgentTool), short(s.ClaudeSessionID))
+	} else {
+		fmt.Printf("%s started\n", s.Key)
 	}
-	fmt.Printf("%s started | %s\n", s.Key, link)
 	return cmdResume(be, s.Key, map[string]bool{})
 }
 
@@ -239,7 +239,7 @@ func finishLocked(be backend, kind, text string) error {
 	if kind == "handoff" && text == "" {
 		return errors.New("usage: tk handoff \"<what was done, what is left, what did not work>\"")
 	}
-	costLine, err := syncCost(be, s, time.Now().Add(time.Minute))
+	costLine, err := syncCost(be, s, time.Now().Add(2*time.Second)) // same margin as tkd's final sync: never count replies after the session ended
 	if err != nil {
 		costLine = "cost: not synced now (" + firstSentence(err.Error()) + "); tkd will sync it after the session"
 	}
@@ -252,6 +252,11 @@ func finishLocked(be backend, kind, text string) error {
 	}
 	if err := closeSession(*s); err != nil {
 		return err
+	}
+	if cr, ok := be.(costReporter); ok { // the issue's running total, where tk keeps it
+		if t, err := cr.costSummary(s.Key); err == nil && t.Events > 0 && t.Unpriced < t.Events {
+			costLine += fmt.Sprintf(" · %s total ~%s", s.Key, dollars(t.Cents))
+		}
 	}
 	if kind == "handoff" {
 		fmt.Printf("%s handed off (%s) | next session: tk start %s\n%s\n", s.Key, status, s.Key, costLine)

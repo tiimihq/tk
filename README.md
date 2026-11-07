@@ -8,6 +8,10 @@ coding agents you run yourself: Claude Code, Codex, Cursor, Gemini CLI, OpenCode
 issue, carries handoffs between sessions and between agents, and records what each issue cost in
 tokens and dollars, in the tracker your team already uses. No second tracker to sync.
 
+![Tiimi demo: tk receipt, then Claude Code hands an issue off to Codex](demo/tiimi-demo.gif)
+
+<sub>Demo on a sample project with made-up logs; re-record it with `demo/record.sh`.</sub>
+
 > Status: preview. Commands and file formats may still change. Site: [tiimi.dev](https://tiimi.dev)
 
 ## Install

@@ -5,7 +5,7 @@ name: site
 on:
   push:
     branches: [main]
-    paths: ["site/**", "install.sh", ".github/workflows/pages.yml"]
+    paths: ["site/**", "install.sh", "demo/tiimi-demo.mp4", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:
@@ -30,6 +30,8 @@ jobs:
           mkdir -p _site
           cp -R site/. _site/
           cp install.sh _site/install
+          cp demo/tiimi-demo.mp4 _site/demo.mp4
+          cp demo/poster.png _site/demo-poster.png
           echo tiimi.dev > _site/CNAME
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5

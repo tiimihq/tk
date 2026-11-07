@@ -57,7 +57,7 @@ func TestCodexUsageSync(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(line, "2 replies (2 new)") || !strings.Contains(line, "in 12000 | cache read 24000") || !strings.Contains(line, "~$0.15") {
+	if !strings.Contains(line, "2 replies") || !strings.Contains(line, "36k tokens") || !strings.Contains(line, "~$0.15") {
 		t.Fatalf("cost line = %q", line)
 	}
 	tot, _ := lb.costSummary(is.Identifier)
@@ -69,8 +69,11 @@ func TestCodexUsageSync(t *testing.T) {
 	if ev["provider"] != "openai" || ev["model"] != "gpt-6-astra" || ev["costStatus"] != "estimated" || ev["costCents"] != "15.400000" {
 		t.Fatalf("event = %v", ev)
 	}
-	if line, _ := syncCost(lb, &s, time.Now().Add(time.Minute)); !strings.Contains(line, "(0 new)") {
-		t.Fatalf("repeat sync posted again: %q", line)
+	_, _ = syncCost(lb, &s, time.Now().Add(time.Minute))
+	n := 0
+	_ = lb.withStore(false, func(st *localStore) error { n = len(st.Issues[0].CostEvents); return nil })
+	if n != 1 {
+		t.Fatalf("repeat sync posted again: %d cost events", n)
 	}
 
 	// A session linked to one Claude Code transcript is a Claude session: Codex logs are not its usage.
