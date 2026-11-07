@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tiimi benchmark card</title>
+<style>
+  :root {
+    --bg: #111311; --ink: #e9ebe4; --muted: #9aa196; --line: #2a2e29; --track: #1d211c;
+    --accent: #b6f06b; --other: #5d655a;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1600px; height: 900px; background: var(--bg); color: var(--ink); font-family: var(--sans); overflow: hidden; }
+  .card { padding: 72px 96px 0; height: 900px; display: flex; flex-direction: column; }
+  .top { display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 700; letter-spacing: -0.01em; }
+  .brand svg { width: 40px; height: 40px; }
+  .tag { font: 600 18px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); background: #1f2a15; padding: 10px 16px; border-radius: 99px; }
+  h1 { font-size: 64px; line-height: 1.05; letter-spacing: -0.035em; margin: 44px 0 14px; }
+  .sub { font-size: 26px; color: var(--muted); margin-bottom: 40px; }
+  .rows { display: grid; gap: 28px; }
+  .row { display: grid; grid-template-columns: 260px 1fr 150px; align-items: center; gap: 28px; }
+  .name { font-size: 34px; }
+  .row.tk .name { font-weight: 800; color: var(--accent); }
+  .track { height: 50px; background: var(--track); border-radius: 10px; overflow: hidden; display: block; }
+  .fill { height: 100%; display: block; border-radius: 10px; background: var(--other); }
+  .row.tk .fill { background: var(--accent); }
+  .val { font: 600 36px var(--mono); text-align: right; }
+  .row.tk .val { color: var(--accent); }
+  .stat { margin-top: 44px; font-size: 34px; font-weight: 700; letter-spacing: -0.01em; }
+  .stat em { font-style: normal; color: var(--accent); }
+  .foot { margin-top: auto; padding: 0 0 52px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 22px; color: var(--muted); }
+  .foot b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="top">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#1d211c"/><circle cx="11" cy="16" r="4.5" fill="#b6f06b"/><circle cx="21" cy="16" r="4.5" fill="none" stroke="#b6f06b" stroke-width="2.4"/></svg>
+      Tiimi
+    </div>
+    <span class="tag">Benchmark · <span style="text-transform:none">tk v0.1.2</span></span>
+  </div>
+  <h1>What your issue tracker costs your agent</h1>
+  <p class="sub">Tokens to read an issue with 8 comments, post a note and hand it off. Claude Code, median of 3 runs.</p>
+  <div class="rows">
+    <div class="row tk"><span class="name">tk</span><span class="track"><span class="fill" style="width:31.2%"></span></span><span class="val">42–45k</span></div>
+    <div class="row"><span class="name">gh CLI</span><span class="track"><span class="fill" style="width:44.7%"></span></span><span class="val">63k</span></div>
+    <div class="row"><span class="name">Beads</span><span class="track"><span class="fill" style="width:53.2%"></span></span><span class="val">75k</span></div>
+    <div class="row"><span class="name">GitHub MCP</span><span class="track"><span class="fill" style="width:97.2%"></span></span><span class="val">137k</span></div>
+    <div class="row"><span class="name">Linear MCP</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="val">141k</span></div>
+  </div>
+  <p class="stat"><em>≈3× fewer tokens</em> than the GitHub and Linear MCP servers, ~45% fewer than Beads.</p>
+  <div class="foot">
+    <span>Tracker tokens per job, above Claude Code's own 16k. Lower is better.</span>
+    <span><b>tiimi.dev/benchmarks</b></span>
+  </div>
+</div>
+</body>
+</html>
