@@ -27,6 +27,7 @@
   .row.tk .fill { background: var(--accent); }
   .val { font: 600 38px var(--mono); text-align: right; }
   .row.tk .val { color: var(--accent); }
+  .sqbr { display: none; } html.sq .sqbr { display: inline; }
   .punch { font-size: 120px; font-weight: 800; letter-spacing: -0.045em; line-height: 1; color: var(--accent); }
   .punch-sub { font-size: 40px; font-weight: 600; margin-top: 22px; }
   .punch-note { font-size: 24px; color: var(--muted); margin-top: 26px; }
@@ -39,6 +40,27 @@
   .chip b { color: var(--accent); font-weight: 600; }
   .url { font: 700 40px var(--mono); color: var(--accent); margin-top: 52px; }
   .foot { position: absolute; left: 120px; right: 120px; bottom: 44px; display: flex; justify-content: space-between; font-size: 20px; color: var(--muted); opacity: 0; }
+  /* square (1080x1080) layout for LinkedIn / Instagram: index.html?sq=1 */
+  html.sq, html.sq body { width: 1080px; height: 1080px; }
+  html.sq .scene { padding: 0 80px; }
+  html.sq .big { font-size: 74px; }
+  html.sq .kicker { font-size: 20px; }
+  html.sq h2 { font-size: 54px; }
+  html.sq .sub { font-size: 23px; margin-bottom: 52px; }
+  html.sq .rows { gap: 34px; }
+  html.sq .row { grid-template-columns: 1fr 150px; grid-template-areas: "name val" "track track"; gap: 10px 20px; }
+  html.sq .row .name { grid-area: name; font-size: 32px; }
+  html.sq .row .val { grid-area: val; font-size: 34px; }
+  html.sq .row .track { grid-area: track; height: 34px; }
+  html.sq .punch { font-size: 104px; line-height: 1.02; }
+  html.sq .punch-sub { font-size: 38px; }
+  html.sq .punch-note { font-size: 24px; }
+  html.sq .logo { font-size: 88px; }
+  html.sq .logo svg { width: 100px; height: 100px; }
+  html.sq .tagline { font-size: 32px; }
+  html.sq .chips { flex-direction: column; align-items: center; gap: 14px; }
+  html.sq .url { margin-top: 46px; }
+  html.sq .foot { left: 80px; right: 80px; bottom: 40px; font-size: 18px; flex-direction: column; gap: 6px; }
 </style>
 </head>
 <body>
@@ -57,7 +79,7 @@
 
   <!-- 3: punchline -->
   <div class="scene" id="s3">
-    <div class="punch">≈3× fewer tokens</div>
+    <div class="punch">≈3× fewer<br class="sqbr"> tokens</div>
     <div class="punch-sub">than the GitHub and Linear MCP servers.</div>
     <div class="punch-note">~45% fewer than Beads · about half the cost per job</div>
   </div>
@@ -124,7 +146,9 @@ function render(t) {
   document.getElementById("r0").style.transform = `scale(${1 + pulse * 0.03})`;
 }
 
-const t = parseFloat(new URLSearchParams(location.search).get("t") || "0");
+const params = new URLSearchParams(location.search);
+if (params.get("sq")) document.documentElement.classList.add("sq");
+const t = parseFloat(params.get("t") || "0");
 render(t);
 </script>
 </body>
